@@ -12,14 +12,18 @@ import {
   Text,
   Metric,
   Button,
-  Accordion, AccordionBody, AccordionHeader, AccordionList
+  Accordion,
+  AccordionBody,
+  AccordionHeader,
+  AccordionList,
 } from "@tremor/react";
+import { Bars } from "react-loader-spinner";
 
 function App() {
   const [key, setKey] = useState("");
   const [blockchain, setBlockchain] = useState("");
   const [event, setEvent] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [prices, setPrices] = useState({ first: "", second: "", third: "" });
 
   const allBlockchains = [
@@ -119,14 +123,14 @@ function App() {
     "zora-mainnet",
   ];
 
-const events = [
-  { displayValue: "ERC20 token transfers",
-   value: "erc20" },
-  { displayValue: "Native token transfers", value: "nativetokens" },
-  { displayValue: "Uniswap V3 swap events", value: "uniswapv3" }
-]
+  const events = [
+    { displayValue: "ERC20 token transfers", value: "erc20" },
+    { displayValue: "Native token transfers", value: "nativetokens" },
+    { displayValue: "Uniswap V3 swap events", value: "uniswapv3" },
+  ];
 
   const getPrices = async (inputKey, inputEvent, inputChain) => {
+    setLoading(true)
     const client = new CovalentClient(inputKey);
     const r = await client.BaseService.getGasPrices(
       inputChain,
@@ -170,13 +174,10 @@ const events = [
             value={key}
             color="rose"
           />
-         
         </div>
 
         <div className="w-full">
-          <p className="my-2 text-xl font-bold">
-            Select a blockchain
-          </p>
+          <p className="my-2 text-xl font-bold">Select a blockchain</p>
           <Select value={blockchain} onValueChange={setBlockchain}>
             {allBlockchains.map((item) => (
               <SelectItem value={item}>{item}</SelectItem>
@@ -185,9 +186,7 @@ const events = [
         </div>
 
         <div className="w-full">
-          <p className="my-2 text-xl font-bold">
-            Pick an event
-          </p>
+          <p className="my-2 text-xl font-bold">Pick an event</p>
           <Select value={event} onValueChange={setEvent}>
             {events.map((item) => (
               <SelectItem value={item.value}>{item.displayValue}</SelectItem>
@@ -199,12 +198,12 @@ const events = [
         <Button
           color="rose"
           onClick={() => {
-            if(!key && !event && !blockchain){
+            if (!key && !event && !blockchain) {
               alert("You haven't inputted any values");
               return;
             }
             getPrices(key, event, blockchain);
-            window.location = "./#dashboard"
+            window.location = "./#dashboard";
           }}
           className="w-full"
         >
@@ -213,66 +212,139 @@ const events = [
         </Button>
       </div>
 
-      <div className="mt-5">
+      <div className={`mt-5 flex flex-col justify-center ${loading ? "items-center" : null} w-full`}>
         <p className="m-8 text-3xl font-bold inline-block p-5 text-blue-900">
-           Dashboard 
+          Dashboard
         </p>
-        <Grid numItems={1} numItemsSm={1} numItemsLg={1} className="gap-3" id="dashboard">
-          <Col>
-            <Card>
-              <Title>The Average Gas Price</Title>
-              <Text>For 1 minute</Text>
-              <Metric className="mt-4 text-blue-900">
-                {loading ? <span className="text-sm text-blue-100">fetching price...</span> : prices.first}
-              </Metric>
-            </Card>
-          </Col>
-          <Col>
-            <Card>
-              <Title>The Average Gas Price</Title>
-              <Text>For 3 minutes</Text>
-              <Metric className="mt-4 text-blue-900">
-                {loading ? <span className="text-sm text-blue-100">fetching price...</span> : prices.second}
-              </Metric>
-            </Card>
-          </Col>
-          <Col>
-            <Card>
-              <Title>The Average Gas Price</Title>
-              <Text>For 5 minutes</Text>
-              <Metric className="mt-4 text-blue-900">
-                {loading ? <span className="text-sm text-blue-100">fetching price...</span> : prices.third}
-              </Metric>
-            </Card>
-          </Col>
-        </Grid>
+        {loading ? (
+          <Bars
+            height="80"
+            width="80"
+            color="#111827"
+            ariaLabel="bars-loading"
+            wrapperStyle={{}}
+            wrapperClass=""
+            visible={true}
+          />
+        ) : (
+          <Grid
+            numItems={1}
+            numItemsSm={1}
+            numItemsLg={1}
+            className="gap-3"
+            id="dashboard"
+          >
+            <Col>
+              <Card>
+                <Title>The Average Gas Price</Title>
+                <Text>For 1 minute</Text>
+                <Metric className="mt-4 text-blue-900">
+                  {loading ? (
+                    <span className="text-sm text-blue-100">
+                      fetching price...
+                    </span>
+                  ) : (
+                    prices.first
+                  )}
+                </Metric>
+              </Card>
+            </Col>
+            <Col>
+              <Card>
+                <Title>The Average Gas Price</Title>
+                <Text>For 3 minutes</Text>
+                <Metric className="mt-4 text-blue-900">
+                  {loading ? (
+                    <span className="text-sm text-blue-100">
+                      fetching price...
+                    </span>
+                  ) : (
+                    prices.second
+                  )}
+                </Metric>
+              </Card>
+            </Col>
+            <Col>
+              <Card>
+                <Title>The Average Gas Price</Title>
+                <Text>For 5 minutes</Text>
+                <Metric className="mt-4 text-blue-900">
+                  {loading ? (
+                    <span className="text-sm text-blue-100">
+                      fetching price...
+                    </span>
+                  ) : (
+                    prices.third
+                  )}
+                </Metric>
+              </Card>
+            </Col>
+          </Grid>
+        )}
       </div>
 
       <div className="mt-5">
-        <h1 className="text-4xl font-bold text-red-600 my-5">IMPORTANT INFORMATION</h1>
-      <AccordionList className="w-full bg-white">
-    <Accordion >
-      <AccordionHeader>Steps to Obtain Covalent Unified API key</AccordionHeader>
-      <AccordionBody>
-      To access the functionalities offered on this page via an API key, please go through the following steps:
-      Head to the <a href="https://www.covalenthq.com/platform/" target="_blank" className="text-blue-500 underline">Covalent Platform</a>.
-      Sign up or register on the platform to obtain your exclusive and distinct API key.
-      </AccordionBody>
-    </Accordion>
-    <Accordion>
-      <AccordionHeader>About Page</AccordionHeader>
-      <AccordionBody>
-      The creation of this Single-Page Application (SPA) was a contribution to the Covalent bounty initiative named "Build and Deploy a Chain-specific Gas Price Dashboard Using GoldRush Kit." This application empowers users by enabling them to input their Covalent API key, select a blockchain, and pick from diverse event types. Through this platform, users gain access to dynamically displayed gas prices correlated to the chosen event type within their selected blockchain. This interactive feature significantly enriches user interaction, offering insightful perspectives into gas prices associated with distinct activities on specific blockchains.
-      </AccordionBody>
-    </Accordion>
-    <Accordion>
-      <AccordionHeader>Best practice guide on the secure usage and non-retention of the user's API key</AccordionHeader>
-      <AccordionBody>
-      Our utmost priority revolves around safeguarding user security. Abiding by secure practices for API key utilization is imperative:
-Firstly, maintain utmost confidentiality regarding your API key. Keep it strictly confidential, refraining from public disclosure or sharing it with unauthorized parties. Secondly, ensure secure storage of your API key in a protected environment, preventing exposure in insecure platforms or public repositories. Thirdly, conduct regular checks on your API key usage to detect any unauthorized access or suspicious activities promptly. Lastly, adhere to our non-retention policy for API keys; we prioritize responsible data management, refraining from unnecessary storage of your API key. These guidelines aim to bolster the secure and responsible handling of your API key, fortifying user trust in our platform's security measures..
-      </AccordionBody>
-    </Accordion>
-  </AccordionList>
+        <h1 className="text-4xl font-bold text-red-600 my-5">
+          IMPORTANT INFORMATION
+        </h1>
+        <AccordionList className="w-full bg-white">
+          <Accordion>
+            <AccordionHeader>
+              Steps to Obtain Covalent Unified API key
+            </AccordionHeader>
+            <AccordionBody>
+              To access the functionalities offered on this page via an API key,
+              please go through the following steps: Head to the{" "}
+              <a
+                href="https://www.covalenthq.com/platform/"
+                target="_blank"
+                className="text-blue-500 underline"
+              >
+                Covalent Platform
+              </a>
+              . Sign up or register on the platform to obtain your exclusive and
+              distinct API key.
+            </AccordionBody>
+          </Accordion>
+          <Accordion>
+            <AccordionHeader>About Page</AccordionHeader>
+            <AccordionBody>
+              The creation of this Single-Page Application (SPA) was a
+              contribution to the Covalent bounty initiative named "Build and
+              Deploy a Chain-specific Gas Price Dashboard Using GoldRush Kit."
+              This application empowers users by enabling them to input their
+              Covalent API key, select a blockchain, and pick from diverse event
+              types. Through this platform, users gain access to dynamically
+              displayed gas prices correlated to the chosen event type within
+              their selected blockchain. This interactive feature significantly
+              enriches user interaction, offering insightful perspectives into
+              gas prices associated with distinct activities on specific
+              blockchains.
+            </AccordionBody>
+          </Accordion>
+          <Accordion>
+            <AccordionHeader>
+              Best practice guide on the secure usage and non-retention of the
+              user's API key
+            </AccordionHeader>
+            <AccordionBody>
+              Our utmost priority revolves around safeguarding user security.
+              Abiding by secure practices for API key utilization is imperative:
+              Firstly, maintain utmost confidentiality regarding your API key.
+              Keep it strictly confidential, refraining from public disclosure
+              or sharing it with unauthorized parties. Secondly, ensure secure
+              storage of your API key in a protected environment, preventing
+              exposure in insecure platforms or public repositories. Thirdly,
+              conduct regular checks on your API key usage to detect any
+              unauthorized access or suspicious activities promptly. Lastly,
+              adhere to our non-retention policy for API keys; we prioritize
+              responsible data management, refraining from unnecessary storage
+              of your API key. These guidelines aim to bolster the secure and
+              responsible handling of your API key, fortifying user trust in our
+              platform's security measures..
+            </AccordionBody>
+          </Accordion>
+        </AccordionList>
       </div>
     </>
   );
